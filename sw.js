@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, refresh it in the background.
-const CACHE = 'hallel-magic-v1';
+const CACHE = 'hallel-magic-v2';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'words.js', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

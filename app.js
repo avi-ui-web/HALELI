@@ -661,4 +661,31 @@ function settings() {
 
 /* ---------- start ---------- */
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
-go('home', {}, true);
+// Simple lock screen so people who find the link can't just walk in.
+const GATE_KEY = 'hallel-gate', GATE_HASH = '034cc5278647ce767f3314e5aedd4af415a52a7fa4032f1d62d1876a5f8dd6a8';
+async function sha(t) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+function gate() {
+  app.innerHTML = `
+    <div class="end" style="padding-top:12vh">
+      <div style="font-size:90px">🦉</div>
+      <h2>מה מילת הקסם?</h2>
+      <p class="tip" style="font-size:16px">הכניסה לבית הספר לקסמים רק למוזמנים</p>
+      <div class="stack" style="margin-top:16px">
+        <input class="field" id="pw" type="password" autocomplete="off" placeholder="מילת הקסם" style="text-align:center">
+        <button class="btn gold" id="enter">כניסה ✨</button>
+        <div class="feedback bad" id="pwmsg"></div>
+      </div>
+    </div>`;
+  const tryIt = async () => {
+    const v = $('#pw').value.replace(/[\s\-־]+/g, '');
+    if (window.crypto && crypto.subtle && await sha('hallel-gate:' + v) === GATE_HASH) {
+      try { localStorage.setItem(GATE_KEY, GATE_HASH); } catch (e) {}
+      sfx.win(); go('home', {}, true);
+    } else { sfx.bad(); $('#pwmsg').textContent = 'זו לא מילת הקסם 🙈'; $('#pw').select(); }
+  };
+  $('#enter').onclick = tryIt;
+  $('#pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryIt(); });
+}
+let unlocked = false;
+try { unlocked = localStorage.getItem(GATE_KEY) === GATE_HASH; } catch (e) {}
+if (unlocked) go('home', {}, true); else gate();
